@@ -22,6 +22,12 @@ namespace Network
 
             acceptSocket = listenerSocket.Accept();
             Console.WriteLine("Connection established...");
+            Console.WriteLine("Receiving data...");
+
+            byte[] buffer = new byte[100];
+            acceptSocket.Receive(buffer);
+            string message = Encoding.ASCII.GetString(buffer);
+            Console.WriteLine(message);
         }
 
         static void Client()
@@ -32,6 +38,12 @@ namespace Network
 
             mainSocket.Connect(new IPEndPoint(IPAddress.Parse("5.30.132.84"), 27016));
             Console.WriteLine("Connection established...");
+
+            Console.WriteLine("Sending message to your server...");
+
+            string message = "Kyle you are awesome!!!";
+            byte[] buffer = Encoding.ASCII.GetBytes(message);
+            mainSocket.Send(buffer);
         }
 
         static void Main(string[] args)
