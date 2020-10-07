@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 namespace Network
 {
@@ -24,10 +25,26 @@ namespace Network
             Console.WriteLine("Connection established...");
             Console.WriteLine("Receiving data...");
 
-            byte[] buffer = new byte[100];
-            acceptSocket.Receive(buffer);
-            string message = Encoding.ASCII.GetString(buffer);
-            Console.WriteLine(message);
+            byte[] receivingBuffer = new byte[100];
+            string message = "";
+
+            while (true)
+            {
+                //--------------------- RECEIVING DATA --------------------------
+                acceptSocket.Receive(receivingBuffer);
+                message = Encoding.ASCII.GetString(receivingBuffer);
+                Console.WriteLine(message);
+                //--------------------- RECEIVING DATA --------------------------
+
+                //--------------------- SENDING DATA --------------------------
+                message = Console.ReadLine();
+                byte[] sendingBuffer = Encoding.ASCII.GetBytes(message);
+                acceptSocket.Send(sendingBuffer);
+                //--------------------- SENDING DATA --------------------------
+            }
+
+            acceptSocket.Close();
+            listenerSocket.Close();
         }
 
         static void Client()
@@ -36,14 +53,30 @@ namespace Network
             mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Console.WriteLine("Attempting to connect to server...");
 
-            mainSocket.Connect(new IPEndPoint(IPAddress.Parse("5.30.132.84"), 27016));
+            mainSocket.Connect(new IPEndPoint(IPAddress.Loopback, 27016));
             Console.WriteLine("Connection established...");
 
-            Console.WriteLine("Sending message to your server...");
+            Console.WriteLine("Please type the message you want to send");
 
-            string message = "Kyle you are awesome!!!";
-            byte[] buffer = Encoding.ASCII.GetBytes(message);
-            mainSocket.Send(buffer);
+            byte[] receivingBuffer = new byte[100];
+            string message = "";
+
+            while (true)
+            {
+                //--------------------- SENDING DATA --------------------------
+                message = Console.ReadLine();
+                byte[] sendingBuffer = Encoding.ASCII.GetBytes(message);
+                mainSocket.Send(sendingBuffer);
+                //--------------------- SENDING DATA --------------------------
+
+                //--------------------- RECEIVING DATA --------------------------
+                mainSocket.Receive(receivingBuffer);
+                message = Encoding.ASCII.GetString(receivingBuffer);
+                Console.WriteLine(message);
+                //--------------------- RECEIVING DATA --------------------------
+            }
+
+            mainSocket.Close();
         }
 
         static void Main(string[] args)
