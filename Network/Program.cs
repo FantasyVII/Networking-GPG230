@@ -31,6 +31,7 @@ namespace Network
             while (true)
             {
                 //--------------------- RECEIVING DATA --------------------------
+                Array.Clear(receivingBuffer, 0, receivingBuffer.Length);
                 acceptSocket.Receive(receivingBuffer);
                 message = Encoding.ASCII.GetString(receivingBuffer);
                 Console.WriteLine(message);
@@ -70,6 +71,7 @@ namespace Network
                 //--------------------- SENDING DATA --------------------------
 
                 //--------------------- RECEIVING DATA --------------------------
+                Array.Clear(receivingBuffer, 0, receivingBuffer.Length);
                 mainSocket.Receive(receivingBuffer);
                 message = Encoding.ASCII.GetString(receivingBuffer);
                 Console.WriteLine(message);
