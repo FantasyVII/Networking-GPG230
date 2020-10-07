@@ -11,13 +11,13 @@ namespace Network
 {
     class Program
     {
-        static void Server()
+        static void Server(int port)
         {
             Socket listenerSocket;
             Socket acceptSocket;
 
             listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            listenerSocket.Bind(new IPEndPoint(IPAddress.Loopback, 27016));
+            listenerSocket.Bind(new IPEndPoint(IPAddress.Any, port));
             Console.WriteLine("Waiting for incoming connection...");
             listenerSocket.Listen(5);
 
@@ -47,13 +47,13 @@ namespace Network
             listenerSocket.Close();
         }
 
-        static void Client()
+        static void Client(string ip, int port)
         {
             Socket mainSocket;
             mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Console.WriteLine("Attempting to connect to server...");
 
-            mainSocket.Connect(new IPEndPoint(IPAddress.Loopback, 27016));
+            mainSocket.Connect(new IPEndPoint(IPAddress.Parse(ip), port));
             Console.WriteLine("Connection established...");
 
             Console.WriteLine("Please type the message you want to send");
@@ -86,10 +86,20 @@ namespace Network
                 switch (args[0])
                 {
                     case "-server":
-                        Server();
+                        if (args.Length < 2)
+                        {
+                            Console.WriteLine("Please provide the server port number");
+                            return;
+                        }
+                        Server(int.Parse(args[1]));
                         break;
                     case "-client":
-                        Client();
+                        if(args.Length < 3)
+                        {
+                            Console.WriteLine("Please provide the server IP address and port number");
+                            return;
+                        }
+                        Client(args[1], int.Parse(args[2]));
                         break;
                     default:
                         Console.WriteLine("Cannot run program with " + args[0] + " as an argument");
