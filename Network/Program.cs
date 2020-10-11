@@ -14,44 +14,82 @@ namespace Network
         static void Server(int port)
         {
             Socket listenerSocket;
-            Socket acceptSocket;
+            List<Socket> client = new List<Socket>();
 
             listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            listenerSocket.Blocking = false;
             listenerSocket.Bind(new IPEndPoint(IPAddress.Any, port));
             Console.WriteLine("Waiting for incoming connection...");
-            listenerSocket.Listen(5);
-
-            acceptSocket = listenerSocket.Accept();
-            Console.WriteLine("Connection established...");
-            Console.WriteLine("Receiving data...");
 
             byte[] receivingBuffer = new byte[100];
             string message = "";
 
             while (true)
             {
-                //--------------------- RECEIVING DATA --------------------------
-                Array.Clear(receivingBuffer, 0, receivingBuffer.Length);
-                acceptSocket.Receive(receivingBuffer);
-                message = Encoding.ASCII.GetString(receivingBuffer);
-                Console.WriteLine(message);
+                listenerSocket.Listen(10);
+
+                try
+                {
+                    Socket acceptSocket = listenerSocket.Accept();
+                    Console.WriteLine("Connection established...");
+                    client.Add(acceptSocket);
+                }
+                catch (SocketException e)
+                {
+                    if (e.SocketErrorCode != SocketError.WouldBlock)
+                        Console.WriteLine(e);
+                }
+
+                for (int i = 0; i < client.Count; i++)
+                {
+                    Array.Clear(receivingBuffer, 0, receivingBuffer.Length);
+                    try
+                    {
+                        client[i].Receive(receivingBuffer);
+                        message = Encoding.ASCII.GetString(receivingBuffer);
+                        Console.WriteLine(message);
+                    }
+                    catch (SocketException e)
+                    {
+                        if (e.SocketErrorCode != SocketError.WouldBlock)
+                        {
+                            if (e.SocketErrorCode == SocketError.ConnectionAborted || e.SocketErrorCode == SocketError.ConnectionReset)
+                            {
+                                Console.WriteLine("Client Disconnected...");
+                                client.RemoveAt(i);
+                            }
+                            else
+                            {
+                                Console.WriteLine(e);
+                            }
+                        }
+                    }
+                }
+
                 //--------------------- RECEIVING DATA --------------------------
 
-                //--------------------- SENDING DATA --------------------------
-                message = Console.ReadLine();
-                byte[] sendingBuffer = Encoding.ASCII.GetBytes(message);
-                acceptSocket.Send(sendingBuffer);
-                //--------------------- SENDING DATA --------------------------
+                //--------------------- RECEIVING DATA --------------------------
+
+
+                /*
+                    //--------------------- SENDING DATA --------------------------
+                    message = Console.ReadLine();
+                    byte[] sendingBuffer = Encoding.ASCII.GetBytes(message);
+                    acceptSocket.Send(sendingBuffer);
+                    //--------------------- SENDING DATA --------------------------
+                */
+
             }
 
-            acceptSocket.Close();
-            listenerSocket.Close();
+            // acceptSocket.Close();
+            //listenerSocket.Close();
         }
 
         static void Client(string ipOrHostName, int port)
         {
             Socket mainSocket;
             mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            // mainSocket.Blocking = false;
             Console.WriteLine("Attempting to connect to server...");
 
             IPAddress ip;
@@ -76,15 +114,17 @@ namespace Network
                 mainSocket.Send(sendingBuffer);
                 //--------------------- SENDING DATA --------------------------
 
+                /*
                 //--------------------- RECEIVING DATA --------------------------
                 Array.Clear(receivingBuffer, 0, receivingBuffer.Length);
                 mainSocket.Receive(receivingBuffer);
                 message = Encoding.ASCII.GetString(receivingBuffer);
                 Console.WriteLine(message);
                 //--------------------- RECEIVING DATA --------------------------
+                */
             }
 
-            mainSocket.Close();
+            //mainSocket.Close();
         }
 
         static void Main(string[] args)
@@ -102,7 +142,7 @@ namespace Network
                         Server(int.Parse(args[1]));
                         break;
                     case "-client":
-                        if(args.Length < 3)
+                        if (args.Length < 3)
                         {
                             Console.WriteLine("Please provide the server IP address and port number");
                             return;
