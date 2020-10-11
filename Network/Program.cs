@@ -85,7 +85,7 @@ namespace Network
             //listenerSocket.Close();
         }
 
-        static void Client(string ipOrHostName, int port)
+        static void Client(string ipOrHostName, int port, string nickname)
         {
             Socket mainSocket;
             mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -103,13 +103,13 @@ namespace Network
             Console.WriteLine("Connection established...");
             Console.WriteLine("Please type the message you want to send");
 
-            byte[] receivingBuffer = new byte[100];
+            byte[] receivingBuffer = new byte[150];
             string message = "";
 
             while (true)
             {
                 //--------------------- SENDING DATA --------------------------
-                message = Console.ReadLine();
+                message = nickname + ": " + Console.ReadLine();
                 byte[] sendingBuffer = Encoding.ASCII.GetBytes(message);
                 mainSocket.Send(sendingBuffer);
                 //--------------------- SENDING DATA --------------------------
@@ -142,12 +142,12 @@ namespace Network
                         Server(int.Parse(args[1]));
                         break;
                     case "-client":
-                        if (args.Length < 3)
+                        if (args.Length < 4)
                         {
-                            Console.WriteLine("Please provide the server IP address and port number");
+                            Console.WriteLine("Please provide the server IP address, port number and nickname");
                             return;
                         }
-                        Client(args[1], int.Parse(args[2]));
+                        Client(args[1], int.Parse(args[2]), args[3]);
                         break;
                     default:
                         Console.WriteLine("Cannot run program with " + args[0] + " as an argument");
