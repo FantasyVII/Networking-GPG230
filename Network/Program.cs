@@ -48,15 +48,21 @@ namespace Network
             listenerSocket.Close();
         }
 
-        static void Client(string ip, int port)
+        static void Client(string ipOrHostName, int port)
         {
             Socket mainSocket;
             mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Console.WriteLine("Attempting to connect to server...");
 
-            mainSocket.Connect(new IPEndPoint(IPAddress.Parse(ip), port));
-            Console.WriteLine("Connection established...");
+            IPAddress ip;
+            bool isIpValid = IPAddress.TryParse(ipOrHostName, out ip);
 
+            if (isIpValid)
+                mainSocket.Connect(new IPEndPoint(ip, port));
+            else
+                mainSocket.Connect(ipOrHostName, port);
+
+            Console.WriteLine("Connection established...");
             Console.WriteLine("Please type the message you want to send");
 
             byte[] receivingBuffer = new byte[100];
