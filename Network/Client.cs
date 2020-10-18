@@ -13,20 +13,24 @@ namespace Network
         string ipOrHostName = "";
         int port = 0;
         string nickname = "";
+        ConsoleColor textColor;
 
-        byte[] receivingBuffer = new byte[150];
+        byte[] receivingBuffer = new byte[1024];
         string sendingMessage = "";
-        string receiveMessage = "";
 
         bool connectedToServer = false;
         int cursorIndex = 0;
         bool isIpValid = false;
 
-        public Client(string ipOrHostName, int port, string nickname)
+        Packet sentPacket = new Packet();
+        Packet receivedPacket = new Packet();
+
+        public Client(string ipOrHostName, int port, string nickname, ConsoleColor textColor)
         {
             this.ipOrHostName = ipOrHostName;
             this.port = port;
             this.nickname = nickname;
+            this.textColor = textColor;
 
             mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             mainSocket.Blocking = false;
@@ -94,11 +98,13 @@ namespace Network
                     }
                     else if (key.Key == ConsoleKey.Enter)
                     {
-                        string finalMessage = nickname + ": " + sendingMessage;
-
                         try
                         {
-                            byte[] sendingBuffer = Encoding.ASCII.GetBytes(finalMessage);
+                            sentPacket.nickName = nickname;
+                            sentPacket.message = sendingMessage;
+                            sentPacket.textColor = textColor;
+
+                            byte[] sendingBuffer = Util.ObjectToByteArray(sentPacket);
                             mainSocket.Send(sendingBuffer);
                             sendingMessage = "";
                             cursorIndex = 0;
@@ -122,6 +128,7 @@ namespace Network
                     }
                     else
                     {
+                        Console.ForegroundColor = textColor;
                         sendingMessage += key.KeyChar;
                         cursorIndex++;
                     }
@@ -133,10 +140,13 @@ namespace Network
                 {
                     Array.Clear(receivingBuffer, 0, receivingBuffer.Length);
                     mainSocket.Receive(receivingBuffer);
-                    receiveMessage = Encoding.ASCII.GetString(receivingBuffer);
+                    receivedPacket = (Packet)Util.ByteArrayToObject(receivingBuffer);
 
                     ClearLine();
-                    Console.WriteLine(receiveMessage);
+                    Console.ForegroundColor = receivedPacket.textColor;
+                    Console.WriteLine(receivedPacket.nickName + ": " + receivedPacket.message);
+
+                    Console.ForegroundColor = textColor;
                     Console.Write(sendingMessage);
                 }
                 catch (SocketException e)

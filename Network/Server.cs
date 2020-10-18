@@ -10,8 +10,7 @@ namespace Network
     {
         Socket listenerSocket;
         List<Socket> client = new List<Socket>();
-        byte[] receivingBuffer = new byte[150];
-        string message = "";
+        byte[] receivingBuffer = new byte[1024];
 
         public Server(int port)
         {
@@ -48,7 +47,6 @@ namespace Network
                     {
                         //--------------------- RECEIVING DATA --------------------------
                         client[i].Receive(receivingBuffer);
-                        message = Encoding.ASCII.GetString(receivingBuffer);
                         //--------------------- RECEIVING DATA --------------------------
 
                         //------------ SENDING DATA ------------------
@@ -56,8 +54,7 @@ namespace Network
                         {
                             try
                             {
-                                byte[] sendingBuffer = Encoding.ASCII.GetBytes(message);
-                                client[j].Send(sendingBuffer);
+                                client[j].Send(receivingBuffer);
                             }
                             catch (SocketException e)
                             {
@@ -68,8 +65,6 @@ namespace Network
                             }
                         }
                         //------------ SENDING DATA ------------------
-
-                        Console.WriteLine(message);
                     }
                     catch (SocketException e)
                     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Network
 {
@@ -6,6 +7,10 @@ namespace Network
     {
         static void Main(string[] args)
         {
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            
+
             if (args.Length > 0)
             {
                 switch (args[0])
@@ -27,7 +32,7 @@ namespace Network
                             Console.WriteLine("Please provide the server IP address, port number and nickname");
                             return;
                         }
-                        Client client = new Client(args[1], int.Parse(args[2]), args[3]);
+                        Client client = new Client(args[1], int.Parse(args[2]), args[3], Util.ConvertStringToColor(args[4]));
                         client.Start();
                         break;
                     default:
