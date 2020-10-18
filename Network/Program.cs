@@ -7,10 +7,6 @@ namespace Network
     {
         static void Main(string[] args)
         {
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            
-
             if (args.Length > 0)
             {
                 switch (args[0])
